@@ -19,14 +19,10 @@ import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TABLE_NA
 
 public class InvenProvider extends ContentProvider {
 
-    //instantiate dbHelper
-    private InvenDbHelper mDbHelper;
-    private final static String LOG_TAG = InvenProvider.class.getSimpleName();
-
     //return ID for Uri matches
     public static final int INVEN_ITEM_MATCH = 100;
     public static final int INVEN_TABLE_MATCH = 200;
-
+    private final static String LOG_TAG = InvenProvider.class.getSimpleName();
     //UriMatcher global variable
     private static UriMatcher sUrimatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -37,6 +33,9 @@ public class InvenProvider extends ContentProvider {
         sUrimatcher.addURI(
                 InvenContract.CONTENT_AUTHORITY, InvenContract.PATH_INVEN, INVEN_TABLE_MATCH);
     }
+
+    //instantiate dbHelper
+    private InvenDbHelper mDbHelper;
 
     @Override
     public boolean onCreate() {
@@ -97,6 +96,7 @@ public class InvenProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
 
         int match = sUrimatcher.match(uri);
+
         switch (match){
             case INVEN_TABLE_MATCH:
                 return insertInven(uri, values);
