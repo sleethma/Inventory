@@ -1,8 +1,10 @@
 package com.example.micha.inventory;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -59,7 +61,7 @@ public class InvenEditor extends AppCompatActivity {
         mDeleteProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                deleteProduct();
             }
         });
 
@@ -126,6 +128,20 @@ public class InvenEditor extends AppCompatActivity {
             } else {
                 // Otherwise, the update was successful and we can display a toast.
                 Toast.makeText(this,"Update Successful!",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void deleteProduct() {
+        if (mCurrentUri == null) {
+            Toast.makeText(this, "Product Not Yet Saved", Toast.LENGTH_LONG).show();
+        } else {
+            int deletedRows = getContentResolver().delete(mCurrentUri, null, null);
+
+            if (deletedRows < 1) {
+                Toast.makeText(this, "Error Deleting Product", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Product Deleted", Toast.LENGTH_LONG).show();
             }
         }
     }

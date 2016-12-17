@@ -84,8 +84,6 @@ public class Overview extends AppCompatActivity {
         int supply;
         int itemsSold;
 
-
-
         cursor.moveToFirst();
         int nameColumnIndex = cursor.getColumnIndex(InvenEntry.NAME);
         name = cursor.getString(nameColumnIndex);

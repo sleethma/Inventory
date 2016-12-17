@@ -8,9 +8,10 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
+import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NAME;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TABLE_NAME;
 
 /**
@@ -26,7 +27,7 @@ public class InvenProvider extends ContentProvider {
     //UriMatcher global variable
     private static UriMatcher sUrimatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    //set matches with contentauthority, path, and access id
+    //set matches with ContentAuthority, path, and access id
     static {
         sUrimatcher.addURI(
                 InvenContract.CONTENT_AUTHORITY, InvenContract.PATH_INVEN + "/#", INVEN_ITEM_MATCH);
@@ -102,11 +103,17 @@ public class InvenProvider extends ContentProvider {
                 return insertInven(uri, values);
             default:
                 throw new IllegalArgumentException("Cannot insert unknown URI " + uri);
-
         }
     }
 
     private Uri insertInven(Uri uri, ContentValues values){
+        //perform data checks for invalid data
+        String name = values.getAsString(NAME);
+        if (name.isEmpty()) {
+            Log.e(LOG_TAG, "name field cannot be left blank");
+            Toast.makeText(getContext(), "Please enter product name", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         long id = db.insert(TABLE_NAME, null, values);
