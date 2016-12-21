@@ -27,13 +27,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="Product: "
-                    android:paddingLeft="10dp"/>
+                    android:paddingLeft="10dp"
+                    android:text="Product: " />
 
                 <EditText
+                    android:id="@+id/productName"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:id="@+id/productName"
                     android:hint="Product Name"
                     android:textSize="20sp" />
             </LinearLayout>
@@ -48,14 +48,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="Price/Unit:"
-                    android:paddingLeft="10dp"/>
+                    android:paddingLeft="10dp"
+                    android:text="Price/Unit:" />
 
                 <EditText
+                    android:id="@+id/productPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:hint="Enter Price"
-                    android:id="@+id/productPrice"
                     android:textSize="20sp" />
             </LinearLayout>
 
@@ -75,10 +75,10 @@
                     />
 
                 <EditText
+                    android:id="@+id/unitsSold"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:hint="Enter #"
-                    android:id="@+id/unitsSold"
                     android:textSize="20sp" />
             </LinearLayout>
 
@@ -127,11 +127,11 @@
                     android:textSize="14sp" />
 
                 <EditText
+                    android:id="@+id/inStock"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0.5"
                     android:hint="Enter #"
-                    android:id="@+id/inStock"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -202,9 +202,9 @@
                 android:textSize="14sp" />
 
             <EditText
+                android:id="@+id/supplierInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/supplierInfo"
                 android:hint="Enter supplier purchasing email"
                 android:textSize="14sp" />
 
@@ -228,6 +228,17 @@
                     android:hint="#"
                     android:paddingLeft="10dp" />
 
+                <ImageButton
+                    android:id="@+id/orderProduct"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="0.5"
+                    android:background="@android:color/transparent"
+                    android:paddingLeft="10dp"
+                    android:src="@drawable/check_button_32x32" />
+
+
             </LinearLayout>
 
         </LinearLayout>
@@ -239,23 +250,23 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <Button
+        android:id="@+id/deleteProduct"
         android:layout_width="0dp"
         android:layout_height="35dp"
-        android:layout_weight="0.5"
-        android:id="@+id/deleteProduct"
-        android:layout_marginLeft="20dp"
-        android:gravity="start"
-        android:layout_marginTop="20dp"
         android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_weight="0.5"
+        android:gravity="start"
         android:text="delete product"
         android:textAlignment="center"/>
 
     <ImageButton
         android:id="@+id/saveProduct"
         android:layout_width="0dp"
-        android:layout_weight="0.5"
         android:layout_height="35dp"
         android:layout_gravity="center_horizontal"
+        android:layout_weight="0.5"
         android:background="@android:color/transparent"
         android:paddingRight="20dp"
         android:src="@drawable/check_button_32x32" />

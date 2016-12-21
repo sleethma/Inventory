@@ -1,9 +1,14 @@
 package com.example.micha.inventory;
 
+import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,15 +17,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import com.example.micha.inventory.Data.InvenContract.InvenEntry;
 import com.example.micha.inventory.Data.InvenDbHelper;
 
-public class Overview extends AppCompatActivity {
+import java.util.List;
 
+public class Overview extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int INVEN_LOADER = 0;
     InvenDbHelper mDbHelper;
     Cursor cursor;
     TextView activityOverview;
+    private InvenAdapter mCursorAdapter;
+    //Custom global cursorloader instance
+    private CursorLoader loader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +49,39 @@ public class Overview extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(Overview.this, InvenEditor.class);
                 startActivity(intent);
-
             }
         });
-        mDbHelper = new InvenDbHelper(this);
-        createDb();
-        displayDbInfo(queryDb());
+
+        //kickoff loader
+        getLoaderManager().initLoader(INVEN_LOADER, null, this);
+
+        //create listview for activity
+        ListView invenListView = (ListView) findViewById(R.id.list_view_inventory);
+
+        invenListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(Overview.this, InvenEditor.class);
+                //Form the content URI that represents the specific pet that was clicked on by
+                //appending the 'id' (passed as input to this method) onto
+                // the {@link PetEntry.CONTENT_URI}. For example, the content uri
+                //content://android.example.pets/pets/2 if the pet with the id=2 was clicked on
+                Uri currentInvenUri = ContentUris.withAppendedId(InvenEntry.CONTENT_URI, id);
+
+                //set the uri on the data field of the intent to pass the uri with intent
+                intent.setData(currentInvenUri);
+                startActivity(intent);
+            }
+        });
+
+        //Setup adapter to create a list item for each row of pet data in Cursor. @param null: null because
+        //data not yet loaded into cursor.
+        mCursorAdapter = new InvenAdapter(this, null);
+        invenListView.setAdapter(mCursorAdapter);
+
+        //set empty view
+        View emptyview = findViewById(R.id.empty_view);
+        invenListView.setEmptyView(emptyview);
     }
 
     private void createDb(){
@@ -77,6 +118,8 @@ public class Overview extends AppCompatActivity {
         return cursor;
     }
 
+
+    //edit and use for display listitem View in Cursor Adapter
     private void displayDbInfo(Cursor cursor){
 
         String name ="";
@@ -124,5 +167,27 @@ public class Overview extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        //make projection
+        String[] projection = {InvenEntry._ID, InvenEntry.NAME, InvenEntry.SUPPLY, InvenEntry.PRICE,
+                InvenEntry.TOTAL_ITEM_SALES, InvenEntry.SUPPLIER_INFO};
+
+
+        //This loader will excecute the ContentProvider's query method on the background thread
+        return new CursorLoader(this, InvenEntry.CONTENT_URI, projection, null, null, null);
+    }
+
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mCursorAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mCursorAdapter.swapCursor(null);
     }
 }

@@ -11,11 +11,9 @@ import com.example.micha.inventory.Data.InvenContract.InvenEntry;
 
 public class InvenDbHelper extends SQLiteOpenHelper{
 
-    private static final String DATABASE_NAME = "inventoryDb.db";
-
-    private static final int DATABASE_VERSION = 1;
-
     public static final String LOG_TAG = InvenDbHelper.class.getSimpleName();
+    private static final String DATABASE_NAME = "inventoryDb.db";
+    private static final int DATABASE_VERSION = 1;
 
 
     public InvenDbHelper(Context context){
@@ -32,7 +30,10 @@ public class InvenDbHelper extends SQLiteOpenHelper{
             + InvenEntry.PRICE + " INTEGER, "
             + InvenEntry.TOTAL_ITEM_SALES + " INTEGER DEFAULT 0, "
             + InvenEntry.SUPPLY + " INTEGER DEFAULT 0, "
-            + InvenEntry.SUPPLIER_INFO + " TEXT);";
+            + InvenEntry.SUPPLIER_INFO + " TEXT, "
+            + InvenEntry.NUM_TO_SHIP + " INTEGER DEFAULT 0, "
+            + InvenEntry.NEW_SOLD + " INTEGER DEFAULT 0, "
+            + InvenEntry.NUM_TO_ORDER + " INTEGER DEFAULT 0);";
 
         db.execSQL(CREATE_DB_TABLE);
     }

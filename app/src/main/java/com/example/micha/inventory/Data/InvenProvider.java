@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
+import static android.content.ContentUris.parseId;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NAME;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TABLE_NAME;
 
@@ -70,7 +71,7 @@ public class InvenProvider extends ContentProvider {
                 // selection, we have 1 String in the selection arguments' String array.
 
                 selection = InvenEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(parseId(uri))};
 
                 // This will perform a query on the pets table where the _id equals 3 to return a
                 // Cursor containing that row of the table.
@@ -100,6 +101,7 @@ public class InvenProvider extends ContentProvider {
 
         switch (match){
             case INVEN_TABLE_MATCH:
+
                 return insertInven(uri, values);
             default:
                 throw new IllegalArgumentException("Cannot insert unknown URI " + uri);
@@ -117,6 +119,10 @@ public class InvenProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         long id = db.insert(TABLE_NAME, null, values);
+        if (id > 0) {
+            //Notify all listeners that the data has changed for the pet content uri
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
 
         // If the ID is -1, then the insertion failed. Log an error and return null.
         if(id == -1){
@@ -128,11 +134,49 @@ public class InvenProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+
+        int rowsDeleted = 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        //match uri to determine item or list delete
+        int match = sUrimatcher.match(uri);
+
+        switch (match) {
+            case INVEN_TABLE_MATCH:
+                rowsDeleted = db.delete(InvenEntry.TABLE_NAME, selection, selectionArgs);
+                if (rowsDeleted > 0) {
+
+                    //Notify all listeners that the data has changed for the pet content uri
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
+
+            case INVEN_ITEM_MATCH:
+                selection = InvenEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(parseId(uri))};
+                rowsDeleted = db.delete(InvenEntry.TABLE_NAME, selection, selectionArgs);
+
+                if (rowsDeleted > 0) {
+                    //Notify all listeners that the data has changed for the pet content uri
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
+
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int rowsUpdated = db.update(InvenEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        if (rowsUpdated > 0) {
+            //Notify all listeners that the data has changed for the pet content uri
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsUpdated;
     }
 }

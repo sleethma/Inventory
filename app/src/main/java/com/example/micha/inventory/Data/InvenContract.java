@@ -47,6 +47,12 @@ public final static String _ID = BaseColumns._ID;
 
     public final static String SUPPLIER_INFO = "supplier_info";
 
+    public final static String NUM_TO_SHIP = "number_to_ship";
+
+    public final static String NEW_SOLD = "new_sold";
+
+    public final static String NUM_TO_ORDER = "num_to_order";
+
     }
 
 }

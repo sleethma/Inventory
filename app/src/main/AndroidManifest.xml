@@ -17,6 +17,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            //allow email intent
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <data android:scheme="mailto" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
         </activity>
         <activity
@@ -28,8 +34,8 @@
                 android:value=".Overview" />
         </activity>
         <provider
-            android:authorities="com.example.micha.inventory"
             android:name=".Data.InvenProvider"
+            android:authorities="com.example.micha.inventory"
             android:exported="false"/>
     </application>
 
