@@ -7,19 +7,24 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.micha.inventory.Data.InvenContract.InvenEntry;
 
 
 import static android.content.Intent.ACTION_SENDTO;
+import static android.content.Intent.ACTION_SEND_MULTIPLE;
 import static android.content.Intent.EXTRA_EMAIL;
 import static android.content.Intent.EXTRA_SUBJECT;
 import static android.content.Intent.EXTRA_TEXT;
@@ -38,9 +43,11 @@ import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TOTAL_IT
 
 public class InvenEditor extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final String LOG_TAG = InvenEditor.class.getSimpleName();
+
+
     //CursorLoader id #
     private static final int URL_LOADER = 0;
-
     //Initialize Views
     EditText mProductName;
     EditText mProductPrice;
@@ -51,11 +58,17 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
     EditText mSupplierInfo;
     EditText mNumToOrder;
     Button mDeleteProduct;
+    Button mProductImgBut;
     ImageButton mSaveProduct;
     ImageButton mOrderProduct;
-
+    ImageView mProductImg;
+    TextView mUploadInstruct;
     //Current Uri
     Uri mCurrentUri;
+    /**
+     * URI that will contain the path to the chosen image
+     */
+    private Uri pictureUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +86,9 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         mDeleteProduct = (Button) findViewById(R.id.deleteProduct);
         mSaveProduct = (ImageButton) findViewById(R.id.saveProduct);
         mOrderProduct = (ImageButton) findViewById(R.id.orderProduct);
+        mProductImgBut = (Button) findViewById(R.id.productImgBut);
+        mProductImg = (ImageView) findViewById(R.id.productImg);
+        mUploadInstruct = (TextView) findViewById(R.id.uploadInstruct);
 
         //get event Intent from list_view
         Intent intent = getIntent();
@@ -108,21 +124,78 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         mOrderProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(getBaseContext(), "button works!", Toast.LENGTH_LONG).show();
-                /*orderAmt = mNumToOrder.getText().toString();
-                mAddresses = mSupplierInfo.getText().toString();
-                String productName = mProductName.getText().toString();
-                String message = "We would like to place an order for " + orderAmt + " more of product"
-                        + " name: " + productName + ".";
-                String[] addressArray = {m
-                Addresses};
-                String mailSubject = "Order request for " + productName;
-                sendOrder(addressArray, mailSubject, mMessage);
-                //check user data to make sure valid
-                */
-
+                sendOrder();
             }
         });
+        mProductImgBut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(getBaseContext(), "Test Img click", Toast.LENGTH_LONG).show();
+                uploadProductImg();
+            }
+        });
+    }
+
+    private void uploadProductImg() {
+        Intent pictureIntent;
+
+        if (Build.VERSION.SDK_INT < 19) {
+            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        } else {
+            pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
+        }
+        pictureIntent.setType("image/*");
+        startActivityForResult(Intent.createChooser(pictureIntent, "Select Picture"), 1);
+
+    }
+
+    /**
+     * manage the returned path after selecting the picture
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_CANCELED) {
+            // action cancelled
+            Log.e(LOG_TAG, "onActivityResult() was canceled");
+        }
+        if (resultCode == RESULT_OK) {
+            Uri selectedPicture = data.getData();
+            pictureUri = selectedPicture;
+            Log.v(LOG_TAG, "file path from OnActivityResult pictureUri: " + pictureUri);
+            mProductImg.setImageURI(pictureUri);
+            mUploadInstruct.setText("Edit Image");
+        }
+    }
+
+    private void sendOrder() {
+        if (Integer.parseInt(mNumToOrder.getText().toString()) > 0) {
+            String orderAmt = mNumToOrder.getText().toString();
+            String addresses = mSupplierInfo.getText().toString();
+            String productName = mProductName.getText().toString();
+            String message = "We would like to place an order for " + orderAmt + " more of product"
+                    + " name: " + productName + ".";
+            String[] addressArray = {addresses};
+            String mailSubject = "Order request for " + productName;
+            Intent emailIntent = new Intent(ACTION_SEND_MULTIPLE);
+            emailIntent.setType("text/plain");
+            emailIntent.putExtra(EXTRA_EMAIL, addressArray);
+            emailIntent.putExtra(EXTRA_SUBJECT, mailSubject);
+            emailIntent.putExtra(EXTRA_TEXT, message);
+
+            //says cannot find activity to accept intent
+            if (emailIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(emailIntent);
+            } else {
+                Log.e(LOG_TAG, "Error with sending Intent");
+            }
+        } else {
+            Toast.makeText(this, "Please enter order amount", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void saveInven() {
@@ -132,6 +205,10 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         String soldString = mUnitsSold.getText().toString().trim();
         String inStockString = mInStock.getText().toString().trim();
         String supplierInfo = mSupplierInfo.getText().toString().trim();
+        String newSoldStr = mNewSold.getText().toString().trim();
+        String numToShipStr = mNumToShip.getText().toString().trim();
+
+
 
 
         //Setup ContentValues
@@ -143,6 +220,8 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         int price = 0;
         int sold = 0;
         int inStock = 0;
+        int newSold = 0;
+        int numToShip = 0;
 
         if (!TextUtils.isEmpty(priceString)) {
             price = Integer.parseInt(priceString);
@@ -153,9 +232,31 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         if (!TextUtils.isEmpty(inStockString)) {
             inStock = Integer.parseInt(inStockString);
         }
+        if (!TextUtils.isEmpty(newSoldStr)) {
+            newSold = Integer.parseInt(newSoldStr);
+        }
+        if (!TextUtils.isEmpty(numToShipStr)) {
+            numToShip = Integer.parseInt(numToShipStr);
+        }
+
+        //adjust inStock based on newSold and and numToShip
+        int adjStock = inStock + numToShip - newSold;
+
+        if (adjStock >= 0) {
+            inStock = adjStock;
+            newSold = 0;
+            numToShip = 0;
+            Toast.makeText(this, "Amt In Stock Adjusted", Toast.LENGTH_LONG);
+        } else {
+            Toast.makeText(this, "Cannot Sale more Than In Stock", Toast.LENGTH_LONG);
+        }
+
         values.put(InvenEntry.PRICE, price);
         values.put(InvenEntry.TOTAL_ITEM_SALES, sold);
         values.put(InvenEntry.SUPPLY, inStock);
+        values.put(InvenEntry.NEW_SOLD, newSold);
+        values.put(InvenEntry.NUM_TO_SHIP, numToShip);
+        values.put(InvenEntry.SUPPLIER_INFO, supplierInfo);
 
         //check to see if new product or not
         if (mCurrentUri == null) {
@@ -195,16 +296,6 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         }
     }
 
-    private void sendOrder(String[] addresses, String subject, String message) {
-        Intent intent = new Intent(ACTION_SENDTO);
-        intent.putExtra(EXTRA_EMAIL, addresses);
-        intent.putExtra(EXTRA_SUBJECT, subject);
-        intent.putExtra(EXTRA_TEXT, message);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {InvenEntry._ID, InvenEntry.NAME, InvenEntry.PRICE, InvenEntry.SUPPLY,
@@ -236,7 +327,6 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             mNewSold.setText(newSold);
             mNumToOrder.setText(numToOrder);
         }
-
     }
 
     @Override

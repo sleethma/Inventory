@@ -117,20 +117,22 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="0.6"
-                    android:paddingTop="3dp"
+                    android:layout_weight="0.5"
+                    android:paddingTop="10dp"
                     android:text="In Stock:"
                     android:textColor="@android:color/white"
-                    android:textSize="25sp" />
+                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/supply"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="0.4"
-                    android:paddingTop="3dp"
+                    android:layout_gravity="start"
+                    android:layout_weight="0.5"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="7dp"
                     android:text="0"
-                    android:textAlignment="center"
+                    android:textAlignment="textStart"
                     android:textColor="@android:color/white"
                     android:textSize="25sp" />
 

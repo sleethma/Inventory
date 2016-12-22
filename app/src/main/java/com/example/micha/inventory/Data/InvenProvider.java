@@ -171,12 +171,25 @@ public class InvenProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        int rowsUpdated = db.update(InvenEntry.TABLE_NAME, values, selection, selectionArgs);
 
-        if (rowsUpdated > 0) {
-            //Notify all listeners that the data has changed for the pet content uri
-            getContext().getContentResolver().notifyChange(uri, null);
+        int match = sUrimatcher.match(uri);
+
+        switch (match) {
+            case INVEN_ITEM_MATCH:
+                selection = InvenEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(parseId(uri))};
+                int rowsUpdated = db.update(InvenEntry.TABLE_NAME, values, selection, selectionArgs);
+
+                if (rowsUpdated > 0) {
+                    //Notify all listeners that the data has changed for the pet content uri
+                    getContext().getContentResolver().notifyChange(uri, null);
+                    return rowsUpdated;
+
+                }
+            default:
+                Log.e(LOG_TAG, "unable to match uri: " + uri + "for update");
+                throw new IllegalArgumentException("Insertion not supported for uri: " + uri);
+
         }
-        return rowsUpdated;
     }
 }

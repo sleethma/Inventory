@@ -84,12 +84,34 @@
 
         </LinearLayout>
 
-
-        <ImageView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/productImgBut"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
+
+            <ImageView
+                android:id="@+id/productImg"
+            android:layout_width="match_parent"
+                android:layout_height="match_parent"
             android:src="@drawable/sample_product_img"
             />
+
+            <TextView
+                android:id="@+id/uploadInstruct"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="4dp"
+                android:layout_marginTop="15sp"
+                android:background="@android:color/black"
+                android:text="+ Add \n Image"
+                android:textColor="@android:color/white"
+                android:textSize="15sp" />
+        </FrameLayout>
     </LinearLayout>
 
     <!--image and order product layout-->
@@ -146,7 +168,7 @@
                     android:layout_height="match_parent"
                     android:paddingLeft="10dp"
                     android:paddingTop="15dp"
-                    android:text="Shipment Of: " />
+                    android:text="Shipment Rec: " />
 
                 <EditText
                     android:id="@+id/numToShip"
@@ -168,13 +190,13 @@
                     android:layout_height="match_parent"
                     android:paddingLeft="10dp"
                     android:paddingTop="15dp"
-                    android:text="New Sale Of: " />
+                    android:text="New Sale : " />
 
                 <EditText
                     android:id="@+id/newSold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="#"
+                    android:hint="     #"
                     android:paddingLeft="10dp" />
 
 
