@@ -85,7 +85,6 @@ public class InvenAdapter extends CursorAdapter {
                     supply -= 1;
                     supplyView.setText(String.valueOf(supply));
 
-
                     ContentValues values = new ContentValues();
                     values.put(InvenContract.InvenEntry.SUPPLY, supply);
 

@@ -13,21 +13,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.example.micha.inventory.Data.InvenContract.InvenEntry;
 import com.example.micha.inventory.Data.InvenDbHelper;
-
-import java.util.List;
 
 public class Overview extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -36,6 +31,7 @@ public class Overview extends AppCompatActivity implements LoaderManager.LoaderC
     Cursor cursor;
     TextView activityOverview;
     private InvenAdapter mCursorAdapter;
+
     //Custom global cursorloader instance
     private CursorLoader loader;
 

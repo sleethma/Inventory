@@ -3,20 +3,15 @@ package com.example.micha.inventory;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,12 +23,10 @@ import android.widget.Toast;
 import com.example.micha.inventory.Data.InvenContract.InvenEntry;
 
 
-import static android.content.Intent.ACTION_SENDTO;
 import static android.content.Intent.ACTION_SEND_MULTIPLE;
 import static android.content.Intent.EXTRA_EMAIL;
 import static android.content.Intent.EXTRA_SUBJECT;
 import static android.content.Intent.EXTRA_TEXT;
-import static android.content.Intent.parseUri;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NAME;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NEW_SOLD;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NUM_TO_ORDER;
@@ -51,11 +44,10 @@ import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TOTAL_IT
 public class InvenEditor extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String LOG_TAG = InvenEditor.class.getSimpleName();
-
-
     //CursorLoader id #
     private static final int URL_LOADER = 0;
-
+    //Values that cant be empty
+    String name;
     //Initialize Views
     EditText mProductName;
     EditText mProductPrice;
@@ -210,7 +202,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
 
     private void saveInven() {
         //get info from EditText views
-        String name = mProductName.getText().toString().trim();
+        name = mProductName.getText().toString().trim();
         String priceString = mProductPrice.getText().toString().trim();
         String soldString = mUnitsSold.getText().toString().trim();
         String inStockString = mInStock.getText().toString().trim();
@@ -295,7 +287,9 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
                 Toast.makeText(this, "Update Successful!", Toast.LENGTH_LONG).show();
             }
         }
-        finish();
+        if (!name.equals("")) {
+            finish();
+        }
     }
 
     private void deleteProduct() {

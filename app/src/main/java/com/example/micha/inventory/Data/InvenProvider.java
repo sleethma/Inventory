@@ -184,8 +184,8 @@ public class InvenProvider extends ContentProvider {
                     //Notify all listeners that the data has changed for the pet content uri
                     getContext().getContentResolver().notifyChange(uri, null);
                     return rowsUpdated;
-
                 }
+
             default:
                 Log.e(LOG_TAG, "unable to match uri: " + uri + "for update");
                 throw new IllegalArgumentException("Insertion not supported for uri: " + uri);
