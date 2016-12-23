@@ -53,6 +53,8 @@ public final static String _ID = BaseColumns._ID;
 
     public final static String NUM_TO_ORDER = "num_to_order";
 
+    public final static String PRODUCT_IMG_URI = "product_img";
+
     }
 
 }

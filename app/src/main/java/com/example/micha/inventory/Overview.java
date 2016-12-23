@@ -1,9 +1,11 @@
 package com.example.micha.inventory;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -12,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -119,54 +122,34 @@ public class Overview extends AppCompatActivity implements LoaderManager.LoaderC
     }
 
 
-    //edit and use for display listitem View in Cursor Adapter
-    private void displayDbInfo(Cursor cursor){
-
-        String name ="";
-        int price;
-        int supply;
-        int itemsSold;
-
-        cursor.moveToFirst();
-        int nameColumnIndex = cursor.getColumnIndex(InvenEntry.NAME);
-        name = cursor.getString(nameColumnIndex);
-
-        int priceColumnIndex = cursor.getColumnIndex(InvenEntry.PRICE);
-        price = cursor.getInt(priceColumnIndex);
-
-        int supplyColumnIndex = cursor.getColumnIndex(InvenEntry.SUPPLY);
-        supply = cursor.getInt(supplyColumnIndex);
-
-        int itemsSoldColumnIndex = cursor.getColumnIndex(InvenEntry.TOTAL_ITEM_SALES);
-        itemsSold = cursor.getInt(itemsSoldColumnIndex);
-
-        String dummyData = name + "\n" + price + "\n" + supply + "\n" + itemsSold;
-
-        //activityOverview.setText(dummyData);
-
+    private void deleteInventory() {
+        getContentResolver().delete(InvenEntry.CONTENT_URI, null, null);
     }
 
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Delete Entire Inventory From App?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                deleteInventory();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_overview, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override
@@ -189,5 +172,25 @@ public class Overview extends AppCompatActivity implements LoaderManager.LoaderC
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mCursorAdapter.swapCursor(null);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu options from the res/menu/menu_editor.xml file.
+        // This adds menu items to the app bar.
+        getMenuInflater().inflate(R.menu.menu_overview, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // User clicked on a menu option in the app bar overflow menu
+        switch (item.getItemId()) {
+            // Respond to a click on the "Delete All" menu option
+            case R.id.delete_all:
+                showDeleteConfirmationDialog();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

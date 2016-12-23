@@ -3,15 +3,20 @@ package com.example.micha.inventory;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,11 +33,13 @@ import static android.content.Intent.ACTION_SEND_MULTIPLE;
 import static android.content.Intent.EXTRA_EMAIL;
 import static android.content.Intent.EXTRA_SUBJECT;
 import static android.content.Intent.EXTRA_TEXT;
+import static android.content.Intent.parseUri;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NAME;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NEW_SOLD;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NUM_TO_ORDER;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.NUM_TO_SHIP;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.PRICE;
+import static com.example.micha.inventory.Data.InvenContract.InvenEntry.PRODUCT_IMG_URI;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.SUPPLIER_INFO;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.SUPPLY;
 import static com.example.micha.inventory.Data.InvenContract.InvenEntry.TOTAL_ITEM_SALES;
@@ -48,6 +55,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
 
     //CursorLoader id #
     private static final int URL_LOADER = 0;
+
     //Initialize Views
     EditText mProductName;
     EditText mProductPrice;
@@ -68,7 +76,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
     /**
      * URI that will contain the path to the chosen image
      */
-    private Uri pictureUri;
+    private Uri imgUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +98,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         mProductImg = (ImageView) findViewById(R.id.productImg);
         mUploadInstruct = (TextView) findViewById(R.id.uploadInstruct);
 
+
         //get event Intent from list_view
         Intent intent = getIntent();
 
@@ -102,6 +111,8 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
 
         } else {
             setTitle("Edit Product");
+
+            mUploadInstruct.setText("Edit Image");
             //initiate loader from manager
             getLoaderManager().initLoader(URL_LOADER, null, this);
         }
@@ -110,6 +121,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             @Override
             public void onClick(View v) {
                 deleteProduct();
+                finish();
             }
         });
 
@@ -130,24 +142,22 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         mProductImgBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(getBaseContext(), "Test Img click", Toast.LENGTH_LONG).show();
                 uploadProductImg();
             }
         });
     }
 
     private void uploadProductImg() {
-        Intent pictureIntent;
+        Intent imgIntent;
 
         if (Build.VERSION.SDK_INT < 19) {
-            pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+            imgIntent = new Intent(Intent.ACTION_GET_CONTENT);
         } else {
-            pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
+            imgIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            imgIntent.addCategory(Intent.CATEGORY_OPENABLE);
         }
-        pictureIntent.setType("image/*");
-        startActivityForResult(Intent.createChooser(pictureIntent, "Select Picture"), 1);
-
+        imgIntent.setType("image/*");
+        startActivityForResult(Intent.createChooser(imgIntent, "Select Picture"), 1);
     }
 
     /**
@@ -164,11 +174,11 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             Log.e(LOG_TAG, "onActivityResult() was canceled");
         }
         if (resultCode == RESULT_OK) {
-            Uri selectedPicture = data.getData();
-            pictureUri = selectedPicture;
-            Log.v(LOG_TAG, "file path from OnActivityResult pictureUri: " + pictureUri);
-            mProductImg.setImageURI(pictureUri);
-            mUploadInstruct.setText("Edit Image");
+            Uri uploadedImg = data.getData();
+            imgUri = uploadedImg;
+            Log.v(LOG_TAG, "file path from OnActivityResult imgUri: " + imgUri);
+            mProductImg.setImageURI(imgUri);
+
         }
     }
 
@@ -208,13 +218,18 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         String newSoldStr = mNewSold.getText().toString().trim();
         String numToShipStr = mNumToShip.getText().toString().trim();
 
-
-
+        //converts pictureUri to string and saves to db
+        String pictureString = "";
+        if (imgUri != null) {
+            pictureString = imgUri.toString();
+        }
+        Log.v(LOG_TAG, "saveProduct pictureString: " + pictureString);
 
         //Setup ContentValues
         ContentValues values = new ContentValues();
         values.put(InvenEntry.NAME, name);
         values.put(InvenEntry.SUPPLIER_INFO, supplierInfo);
+        values.put(InvenEntry.PRODUCT_IMG_URI, pictureString);
 
         //set all int vars to 0
         int price = 0;
@@ -280,6 +295,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
                 Toast.makeText(this, "Update Successful!", Toast.LENGTH_LONG).show();
             }
         }
+        finish();
     }
 
     private void deleteProduct() {
@@ -289,9 +305,9 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             int deletedRows = getContentResolver().delete(mCurrentUri, null, null);
 
             if (deletedRows < 1) {
-                Toast.makeText(this, "Error Deleting Product", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Error Deleting Product", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Product Deleted", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Product Deleted", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -300,7 +316,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {InvenEntry._ID, InvenEntry.NAME, InvenEntry.PRICE, InvenEntry.SUPPLY,
                 InvenEntry.TOTAL_ITEM_SALES, InvenEntry.SUPPLIER_INFO, InvenEntry.NUM_TO_ORDER, InvenEntry.NEW_SOLD
-                , InvenEntry.NUM_TO_SHIP};
+                , InvenEntry.NUM_TO_SHIP, InvenEntry.PRODUCT_IMG_URI};
         return new CursorLoader(this, mCurrentUri, projection, null, null, null);
     }
 
@@ -316,6 +332,7 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             String numToShip = cursor.getString(cursor.getColumnIndex(String.valueOf(NUM_TO_SHIP)));
             String newSold = cursor.getString(cursor.getColumnIndex(String.valueOf(NEW_SOLD)));
             String numToOrder = cursor.getString(cursor.getColumnIndex(String.valueOf(NUM_TO_ORDER)));
+            String productImgUriStr = cursor.getString(cursor.getColumnIndex(PRODUCT_IMG_URI));
 
 
             mInStock.setText(String.valueOf(supplyInt));
@@ -326,6 +343,10 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
             mNumToShip.setText(numToShip);
             mNewSold.setText(newSold);
             mNumToOrder.setText(numToOrder);
+            //if no image loaded, show default image
+            if (!productImgUriStr.equals("")) {
+                mProductImg.setImageURI(Uri.parse(productImgUriStr));
+            }
         }
     }
 
@@ -340,6 +361,6 @@ public class InvenEditor extends AppCompatActivity implements LoaderManager.Load
         mNumToShip.setText("");
         mNewSold.setText("");
         mNumToOrder.setText("");
-
+        mProductImg.setImageURI(null);
     }
 }

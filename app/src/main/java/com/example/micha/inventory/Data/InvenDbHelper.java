@@ -33,6 +33,7 @@ public class InvenDbHelper extends SQLiteOpenHelper{
             + InvenEntry.SUPPLIER_INFO + " TEXT, "
             + InvenEntry.NUM_TO_SHIP + " INTEGER DEFAULT 0, "
             + InvenEntry.NEW_SOLD + " INTEGER DEFAULT 0, "
+            + InvenEntry.PRODUCT_IMG_URI + " TEXT, "
             + InvenEntry.NUM_TO_ORDER + " INTEGER DEFAULT 0);";
 
         db.execSQL(CREATE_DB_TABLE);
